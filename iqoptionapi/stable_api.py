@@ -825,7 +825,7 @@ class IQ_Option:
         self.api.buy_multi_option = {}
         self.api.buy_successful = None
         # req_id = "buy"
-        req_id = str(randint(0, 10000))
+        req_id = str(str(len(self.api.buy_multi_option)) + str(int(randint(0, 100))))
         try:
             self.api.buy_multi_option[req_id]["id"] = None
         except:
