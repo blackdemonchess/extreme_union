@@ -822,7 +822,7 @@ class IQ_Option:
         return self.api.result, self.api.buy_multi_option[req_id]["id"]
 
     def buy(self, price, ACTIVES, ACTION, expirations):
-        if len(self.api..buy_multi_option) > 1000:
+        if len(self.api.buy_multi_option) > 1000:
             for k in self.api.buy_multi_option.keys():
                 del self.api.buy_multi_option[k]
                 break
