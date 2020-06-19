@@ -2,7 +2,6 @@
 
 import time
 import json
-import logging
 import threading
 import requests
 import ssl
@@ -122,8 +121,9 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
     close_position_data = None
     overnight_fee = None
     # ---for real time
-    digital_option_placed_id = None
+    digital_option_placed_id = {}
     live_deal_data = nested_dict(3, deque)
+    live_deal_data_all = nested_dict(1, deque)
 
     subscribe_commission_changed_data = nested_dict(2, dict)
     real_time_candles = nested_dict(3, dict)
@@ -195,10 +195,8 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
 
         :returns: The instance of :class:`Response <requests.Response>`.
         """
-        logger = logging.getLogger(__name__)
         url = self.prepare_http_url(resource)
 
-        logger.debug(url)
 
         response = self.session.request(method=method,
                                         url=url,
@@ -206,10 +204,6 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
                                         params=params,
                                         headers=headers,
                                         proxies=self.proxies)
-        logger.debug(response)
-        logger.debug(response.text)
-        logger.debug(response.headers)
-        logger.debug(response.cookies)
 
         response.raise_for_status()
         return response
@@ -226,10 +220,6 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
 
         :returns: The instance of :class:`Response <requests.Response>`.
         """
-        logger = logging.getLogger(__name__)
-
-        logger.debug(method+": "+url+" headers: "+str(self.session.headers) +
-                     " cookies: "+str(self.session.cookies.get_dict()))
 
         response = self.session.request(method=method,
                                         url=url,
@@ -237,10 +227,6 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
                                         params=params,
                                         headers=headers,
                                         proxies=self.proxies)
-        logger.debug(response)
-        logger.debug(response.text)
-        logger.debug(response.headers)
-        logger.debug(response.cookies)
 
         # response.raise_for_status()
         return response
@@ -260,7 +246,6 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
         :param dict msg: The websocket request msg.
         """
 
-        logger = logging.getLogger(__name__)
 
         data = json.dumps(dict(name=name,
                                msg=msg, request_id=request_id))
@@ -269,7 +254,6 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
             pass
         global_value.ssl_Mutual_exclusion_write = True
         self.websocket.send(data)
-        logger.debug(data)
         global_value.ssl_Mutual_exclusion_write = False
 
     @property
@@ -468,7 +452,6 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
         # Main name:"unsubscribeMessage"/"subscribeMessage"/"sendMessage"(only for portfolio.get-positions")
         # name:"portfolio.order-changed"/"portfolio.get-positions"/"portfolio.position-changed"
         # instrument_type="cfd"/"forex"/"crypto"/"digital-option"/"turbo-option"/"binary-option"
-        logger = logging.getLogger(__name__)
         M_name = Main_Name
         request_id = str(request_id)
         if name == "portfolio.order-changed":
@@ -766,8 +749,6 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
             response = self.login(
                 self.username, self.password)  # pylint: disable=not-callable
         except Exception as e:
-            logger = logging.getLogger(__name__)
-            logger.error(e)
             return e
         return response
 

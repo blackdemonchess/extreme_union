@@ -4,7 +4,6 @@ import iqoptionapi.constants as OP_code
 import iqoptionapi.country_id as Country
 import threading
 import time
-import logging
 import operator
 import iqoptionapi.global_value as global_value
 from collections import defaultdict
@@ -81,7 +80,6 @@ class IQ_Option:
             self.api.close()
         except:
             pass
-            # logging.error('**warning** self.api.close() fail')
 
         self.api = IQOptionAPI(
             "iqoption.com", self.email, self.password)
@@ -192,7 +190,6 @@ class IQ_Option:
                 while self.api.instruments == None and time.time() - start < 10:
                     pass
             except:
-                logging.error('**error** api.get_instruments need reconnect')
                 self.connect()
         return self.api.instruments
 
@@ -223,13 +220,11 @@ class IQ_Option:
                     self.api.get_api_option_init_all()
                     break
                 except:
-                    logging.error('**error** get_all_init need reconnect')
                     self.connect()
                     time.sleep(5)
             start = time.time()
             while True:
                 if time.time() - start > 30:
-                    logging.error('**warning** get_all_init late 30 sec')
                     break
                 try:
                     if self.api.api_option_init_all_result != None:
@@ -252,8 +247,7 @@ class IQ_Option:
         start_t = time.time()
         while self.api.api_option_init_all_result_v2 == None:
             if time.time() - start_t >= 30:
-                logging.error('**warning** get_all_init_v2 late 30 sec')
-                return None
+                return None, str('**warning** get_all_init_v2 late 30 sec')
         return self.api.api_option_init_all_result_v2
 
         # return OP_code.ACTIVES
@@ -350,19 +344,6 @@ class IQ_Option:
             pass
         return self.api.profile.msg
 
-    """def get_profile(self):
-        while True:
-            try:
-
-                respon = self.api.getprofile().json()
-                time.sleep(self.suspend)
-
-                if respon["isSuccessful"] == True:
-                    return respon
-            except:
-                logging.error('**error** get_profile try reconnect')
-                self.connect()"""
-
     def get_currency(self):
         balances_raw = self.get_balances()
         for balance in balances_raw["msg"]:
@@ -371,19 +352,6 @@ class IQ_Option:
 
     def get_balance_id(self):
         return global_value.balance_id
-
-    """ def get_balance(self):
-        self.api.profile.balance = None
-        while True:
-            try:
-                respon = self.get_profile()
-                self.api.profile.balance = respon["result"]["balance"]
-                break
-            except:
-                logging.error('**error** get_balance()')
-
-            time.sleep(self.suspend)
-        return self.api.profile.balance"""
 
     def get_balance(self):
 
@@ -466,8 +434,7 @@ class IQ_Option:
             set_id(tournament_id)
 
         else:
-            logging.error("ERROR doesn't have this mode")
-            exit(1)
+        	return False, str("ERROR doesn't have this mode")
 
     # ________________________________________________________________________
     # _______________________        CANDLE      _____________________________
@@ -484,7 +451,6 @@ class IQ_Option:
                 if self.api.candles.candles_data != None:
                     break
             except:
-                logging.error('**error** get_candles need reconnect')
                 self.connect()
 
         return self.api.candles.candles_data
@@ -494,6 +460,22 @@ class IQ_Option:
     # _____________________REAL TIME CANDLE_________________
     # ______________________________________________________
     #######################################################
+    def set_stream_candles_cb(self, cb):
+        self.api.stream_candles_cb = cb
+
+    def subscribe_candles(self, actives=[], size='all'):
+        if len(actives) >= 1:
+            for active in actives:
+                if size == "all":
+                    for s in self.size:
+                        self.api.subscribe(OP_code.ACTIVES[active], s)
+                else:
+                    self.api.subscribe(OP_code.ACTIVES[active], size)
+        else:
+            return {
+                "code": 'need_at_least_one_active',
+                "message": "You need specify at least one active"
+            }
 
     def start_candles_stream(self, ACTIVE, size, maxdict):
 
@@ -508,8 +490,7 @@ class IQ_Option:
             self.start_candles_one_stream(ACTIVE, size)
 
         else:
-            logging.error(
-                '**error** start_candles_stream please input right size')
+        	return False, '**error** start_candles_stream please input right size'
 
     def stop_candles_stream(self, ACTIVE, size):
         if size == "all":
@@ -517,27 +498,21 @@ class IQ_Option:
         elif size in self.size:
             self.stop_candles_one_stream(ACTIVE, size)
         else:
-            logging.error(
-                '**error** start_candles_stream please input right size')
+        	return False, '**error** start_candles_stream please input right size'
 
     def get_realtime_candles(self, ACTIVE, size):
         if size == "all":
             try:
                 return self.api.real_time_candles[ACTIVE]
             except:
-                logging.error(
-                    '**error** get_realtime_candles() size="all" can not get candle')
-                return False
+                return False, '**error** get_realtime_candles() size="all" can not get candle'
         elif size in self.size:
             try:
                 return self.api.real_time_candles[ACTIVE][size]
             except:
-                logging.error(
-                    '**error** get_realtime_candles() size=' + str(size) + ' can not get candle')
-                return False
+                return False, '**error** get_realtime_candles() size=' + str(size) + ' can not get candle'
         else:
-            logging.error(
-                '**error** get_realtime_candles() please input right "size"')
+        	return False, '**error** get_realtime_candles() please input right "size"'
 
     def get_all_realtime_candles(self):
         return self.api.real_time_candles
@@ -562,9 +537,7 @@ class IQ_Option:
         self.api.candle_generated_check[str(ACTIVE)][int(size)] = {}
         while True:
             if time.time() - start > 20:
-                logging.error(
-                    '**error** start_candles_one_stream late for 20 sec')
-                return False
+                return False, '**error** start_candles_one_stream late for 20 sec'
             try:
                 if self.api.candle_generated_check[str(ACTIVE)][int(size)] == True:
                     return True
@@ -574,7 +547,6 @@ class IQ_Option:
 
                 self.api.subscribe(OP_code.ACTIVES[ACTIVE], size)
             except:
-                logging.error('**error** start_candles_stream reconnect')
                 self.connect()
             time.sleep(1)
 
@@ -600,9 +572,7 @@ class IQ_Option:
         start = time.time()
         while True:
             if time.time() - start > 20:
-                logging.error('**error** fail ' + ACTIVE +
-                              ' start_candles_all_size_stream late for 10 sec')
-                return False
+                return False, '**error** fail ' + ACTIVE + ' start_candles_all_size_stream late for 10 sec'
             try:
                 if self.api.candle_generated_all_size_check[str(ACTIVE)] == True:
                     return True
@@ -611,8 +581,6 @@ class IQ_Option:
             try:
                 self.api.subscribe_all_size(OP_code.ACTIVES[ACTIVE])
             except:
-                logging.error(
-                    '**error** start_candles_all_size_stream reconnect')
                 self.connect()
             time.sleep(1)
 
@@ -765,13 +733,9 @@ class IQ_Option:
             try:
                 self.api.get_betinfo(id_number)
             except:
-                logging.error(
-                    '**error** def get_betinfo  self.api.get_betinfo reconnect')
                 self.connect()
             while self.api.game_betinfo.isSuccessful == None:
                 if time.time() - start > 10:
-                    logging.error(
-                        '**error** get_betinfo time out need reconnect')
                     self.connect()
                     self.api.get_betinfo(id_number)
                     time.sleep(self.suspend * 10)
@@ -820,13 +784,12 @@ class IQ_Option:
 
             return buy_id
         else:
-            logging.error('buy_multi error please input all same len')
+        	return False, 'buy_multi error please input all same len'
 
     def get_remaning(self, duration):
         for remaning in get_remaning_time(self.api.timesync.server_timestamp):
             if remaning[0] == duration:
                 return remaning[1]
-        logging.error('get_remaning(self,duration) ERROR duration')
         return "ERROR duration"
 
     def buy_by_raw_expirations(self, price, active, direction, option, expired):
@@ -846,8 +809,6 @@ class IQ_Option:
         while self.api.result == None or id == None:
             try:
                 if "message" in self.api.buy_multi_option[req_id].keys():
-                    logging.error(
-                        '**warning** buy' + str(self.api.buy_multi_option[req_id]["message"]))
                     return False, self.api.buy_multi_option[req_id]["message"]
             except:
                 pass
@@ -855,9 +816,8 @@ class IQ_Option:
                 id = self.api.buy_multi_option[req_id]["id"]
             except:
                 pass
-            if time.time() - start_t >= 5:
-                logging.error('**warning** buy late 5 sec')
-                return False, None
+            if time.time() - start_t >= 15:
+                return False, '**warning** buy late 15 sec'
 
         return self.api.result, self.api.buy_multi_option[req_id]["id"]
 
@@ -885,9 +845,8 @@ class IQ_Option:
                 id = self.api.buy_multi_option[req_id]["id"]
             except:
                 pass
-            if time.time() - start_t >= 5:
-                logging.error('**warning** buy late 5 sec')
-                return False, None
+            if time.time() - start_t >= 15:
+                return False, '**warning** buy late 15 sec'
 
         return self.api.result, self.api.buy_multi_option[req_id]["id"]
 
@@ -912,8 +871,6 @@ class IQ_Option:
         start_t = time.time()
         while self.api.underlying_list_data == None:
             if time.time() - start_t >= 30:
-                logging.error(
-                    '**warning** get_digital_underlying_list_data late 30 sec')
                 return None
 
         return self.api.underlying_list_data
@@ -931,7 +888,6 @@ class IQ_Option:
                 temp["put"] = data["put"]["id"]
                 ans[("%.6f" % (float(data["value"]) * 10e-7))] = temp
         except:
-            logging.error('**error** get_strike_list read problem...')
             return self.api.strike_list, None
         return self.api.strike_list, ans
 
@@ -1005,8 +961,7 @@ class IQ_Option:
         elif action == 'call':
             action = 'C'
         else:
-            logging.error('buy_digital_spot active error')
-            return -1
+            return False, 'buy_digital_spot active error'
         # doEURUSD201907191250PT5MPSPT
         timestamp = int(self.api.timesync.server_timestamp)
         if duration == 1:
@@ -1026,13 +981,14 @@ class IQ_Option:
                         "PT" + str(duration) + "M" + action + "SPT"
         self.api.digital_option_placed_id = None
 
-        self.api.place_digital_option(instrument_id, amount)
-        while self.api.digital_option_placed_id == None:
+        request_id = self.api.place_digital_option(instrument_id, amount)
+        while self.api.digital_option_placed_id.get(request_id) == None:
             pass
-        if isinstance(self.api.digital_option_placed_id, int):
-            return True, self.api.digital_option_placed_id
+        digital_order_id = self.api.digital_option_placed_id.get(request_id)
+        if isinstance(digital_order_id, int):
+            return True, digital_order_id
         else:
-            return False, self.api.digital_option_placed_id
+            return False, digital_order_id
 
     def get_digital_spot_profit_after_sale(self, position_id):
         def get_instrument_id_to_bid(data, instrument_id):
@@ -1056,8 +1012,7 @@ class IQ_Option:
         elif position["instrument_id"].find("MCSPT"):
             z = True
         else:
-            logging.error(
-                'get_digital_spot_profit_after_sale position error' + str(position["instrument_id"]))
+        	return False, 'get_digital_spot_profit_after_sale position error' + str(position["instrument_id"])
 
         ACTIVES = position['raw_event']['instrument_underlying']
         amount = max(position['raw_event']["buy_amount"],
@@ -1139,8 +1094,7 @@ class IQ_Option:
         start_t = time.time()
         while self.api.digital_option_placed_id == None:
             if time.time() - start_t > 30:
-                logging.error('buy_digital loss digital_option_placed_id')
-                return False, None
+                return False, 'buy_digital loss digital_option_placed_id'
         return True, self.api.digital_option_placed_id
 
     def close_digital_option(self, position_id):
@@ -1244,7 +1198,7 @@ class IQ_Option:
         elif ID_Name == "order_id":
             ID = order_id
         else:
-            logging.error('change_order input error ID_Name')
+            return False, 'change_order input error ID_Name'
 
         if check:
             self.api.tpsl_changed_respond = None
@@ -1262,8 +1216,7 @@ class IQ_Option:
             else:
                 return False, self.api.tpsl_changed_respond
         else:
-            logging.error('change_order fail to get position_id')
-            return False, None
+            return False, 'change_order fail to get position_id'
 
     def get_async_order(self, buy_order_id):
         # name': 'position-changed', 'microserviceName': "portfolio"/"digital-options"
@@ -1435,28 +1388,11 @@ class IQ_Option:
     # name:
     # "live-deal-binary-option-placed"
     # "live-deal-digital-option"
-    def subscribe_live_deal(self, name, active, _type, buffersize):
-        active_id = OP_code.ACTIVES[active]
-        self.api.Subscribe_Live_Deal(name, active_id, _type)
-        """
-        self.api.live_deal_data[name][active][_type]=deque(list(),buffersize)
+    def subscribe_live_deal(self, name, buffersize):
+        self.api.Subscribe_Live_Deal(name)
 
-
-        while len(self.api.live_deal_data[name][active][_type])==0:
-            self.api.Subscribe_Live_Deal(name,active_id,_type)
-            time.sleep(1)
-        """
-
-    def unscribe_live_deal(self, name, active, _type):
-        active_id = OP_code.ACTIVES[active]
-        self.api.Unscribe_Live_Deal(name, active_id, _type)
-        """
-
-        while len(self.api.live_deal_data[name][active][_type])!=0:
-            self.api.Unscribe_Live_Deal(name,active_id,_type)
-            del self.api.live_deal_data[name][active][_type]
-            time.sleep(1)
-        """
+    def unscribe_live_deal(self, name):
+        self.api.Unscribe_Live_Deal(name)
 
     def set_digital_live_deal_cb(self, cb):
         self.api.digital_live_deal_cb = cb
@@ -1465,10 +1401,10 @@ class IQ_Option:
         self.api.binary_live_deal_cb = cb
 
     def get_live_deal(self, name, active, _type):
-        return self.api.live_deal_data[name][active][_type]
+        return self.api.live_deal_data_all[name]
 
     def pop_live_deal(self, name, active, _type):
-        return self.api.live_deal_data[name][active][_type].pop()
+        return self.api.live_deal_data_all[name].pop()
 
     def clear_live_deal(self, name, active, _type, buffersize):
         self.api.live_deal_data[name][active][_type] = deque(

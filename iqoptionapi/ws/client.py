@@ -39,6 +39,12 @@ class WebsocketClient(object):
                     del dict[key1][key2][sorted(
                         dict[key1][key2].keys(), reverse=False)[0]]
 
+    def api_dict_clean(self, key_name):
+        if len(self.api[key_name]) > 5000:
+            for k in self.api[key_name].keys():
+                del self.api[key_name][k]
+                break
+
     def on_message(self, message):  # pylint: disable=unused-argument
         """Method to process websocket messages."""
         global_value.ssl_Mutual_exclusion = True
@@ -57,14 +63,13 @@ class WebsocketClient(object):
                 OP_code.ACTIVES.values()).index(message["msg"]["active_id"])]
 
             active = str(Active_name)
-            size = int(message["msg"]["size"])
-            from_ = int(message["msg"]["from"])
             msg = message["msg"]
-            maxdict = self.api.real_time_candles_maxdict_table[Active_name][size]
-
-            self.dict_queue_add(self.api.real_time_candles,
-                                maxdict, active, size, from_, msg)
-            self.api.candle_generated_check[active][size] = True
+            cb_data = {
+                "active": active,
+                **message["msg"]
+            }
+            if hasattr(self.api.stream_candles_cb, '__call__'):
+                self.api.stream_candles_cb(cb_data)
 
         elif message["name"] == "options":
             self.api.get_options_v2_data = message
@@ -245,6 +250,7 @@ class WebsocketClient(object):
 
         elif message["name"] == "technical-indicators":
             if message["msg"].get("indicators") != None:
+                self.api_dict_clean('technical_indicators')
                 self.api.technical_indicators[message["request_id"]
                                               ] = message["msg"]["indicators"]
             else:
@@ -276,10 +282,14 @@ class WebsocketClient(object):
         elif message["name"] == "auto-margin-call-changed":
             self.api.auto_margin_call_changed_respond = message
         elif message["name"] == "digital-option-placed":
-            try:
-                self.api.digital_option_placed_id = message["msg"]["id"]
-            except:
-                self.api.digital_option_placed_id = message["msg"]
+            if message["msg"].get("id") != None:
+                self.api_dict_clean('digital_option_placed_id')
+                self.api.digital_option_placed_id[message["request_id"]] = message["msg"]["id"]
+            else:
+                self.api.digital_option_placed_id[message["request_id"]] = {
+                    "code": "error_place_digital_order",
+                    "message": message["msg"]["message"]
+                }
         elif message["name"] == "result":
             self.api.result = message["msg"]["success"]
         elif message["name"] == "instrument-quotes-generated":
@@ -322,42 +332,16 @@ class WebsocketClient(object):
             self.api.socket_option_closed[id] = message
         elif message["name"] == "live-deal-binary-option-placed":
             name = message["name"]
-            active_id = message["msg"]["active_id"]
-            active = list(OP_code.ACTIVES.keys())[
-                list(OP_code.ACTIVES.values()).index(active_id)]
             _type = message["msg"]["option_type"]
             try:
-                self.api.live_deal_data[name][active][_type].appendleft(
-                    message["msg"])
-                if hasattr(self.api.binary_live_deal_cb, '__call__'):
-                    cb_data = {
-                        "active": active,
-                        **message["msg"]
-                    }
-                    realbinary = Thread(target=self.api.binary_live_deal_cb,
-                                        kwargs=(cb_data))
-                    realbinary.daemon = True
-                    realbinary.start()
+                self.api.live_deal_data_all[name].appendleft(message["msg"])
             except:
                 pass
         elif message["name"] == "live-deal-digital-option":
             name = message["name"]
-            active_id = message["msg"]["instrument_active_id"]
-            active = list(OP_code.ACTIVES.keys())[
-                list(OP_code.ACTIVES.values()).index(active_id)]
             _type = message["msg"]["expiration_type"]
             try:
-                self.api.live_deal_data[name][active][_type].appendleft(
-                    message["msg"])
-                if hasattr(self.api.digital_live_deal_cb, '__call__'):
-                    cb_data = {
-                        "active": active,
-                        **message["msg"]
-                    }
-                    realdigital = Thread(target=self.api.digital_live_deal_cb,
-                                         kwargs=(cb_data))
-                    realdigital.daemon = True
-                    realdigital.start()
+                self.api.live_deal_data_all[name].appendleft(message["msg"])
             except:
                 pass
 

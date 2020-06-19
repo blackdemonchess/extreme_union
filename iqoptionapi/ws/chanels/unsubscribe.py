@@ -102,7 +102,7 @@ class Unsubscribe_commission_changed(Base):
 class Unscribe_live_deal(Base):
     name = "unsubscribeMessage"
     
-    def __call__(self,name,active_id,_type):
+    def __call__(self,name):
         if name=="live-deal-binary-option-placed":
             _type_name="option_type"
             _active_id="active_id"
@@ -114,12 +114,6 @@ class Unscribe_live_deal(Base):
             _active_id="instrument_active_id"
 
         data = {"name":str(name),
-                "params":{
-                       "routingFilters":{
-                                        _active_id:int(active_id), 
-                                       _type_name:str(_type)
-                                        }
-                        },
                 "version":"2.0"
                 }
         self.send_websocket_request(self.name, data)
