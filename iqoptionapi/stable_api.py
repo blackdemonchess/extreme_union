@@ -822,10 +822,15 @@ class IQ_Option:
         return self.api.result, self.api.buy_multi_option[req_id]["id"]
 
     def buy(self, price, ACTIVES, ACTION, expirations):
-        self.api.buy_multi_option = {}
+        if len(self.api..buy_multi_option) > 1000:
+            for k in self.api.buy_multi_option.keys():
+                del self.api.buy_multi_option[k]
+                break
         self.api.buy_successful = None
-        # req_id = "buy"
-        req_id = str(str(len(self.api.buy_multi_option)) + str(int(randint(0, 100))))
+        try:
+            req_id = str(str(len(self.api.buy_multi_option)) + str(int(randint(0, 100))))
+        except:
+            req_id = str(randint(0, 10000))
         try:
             self.api.buy_multi_option[req_id]["id"] = None
         except:
@@ -834,8 +839,8 @@ class IQ_Option:
             float(price), OP_code.ACTIVES[ACTIVES], str(ACTION), int(expirations), req_id)
         start_t = time.time()
         id = None
-        self.api.result = None
-        while self.api.result == None or id == None:
+        result = False
+        while not result or id is None:
             try:
                 if "message" in self.api.buy_multi_option[req_id].keys():
                     return False, self.api.buy_multi_option[req_id]["message"]
@@ -843,12 +848,12 @@ class IQ_Option:
                 pass
             try:
                 id = self.api.buy_multi_option[req_id]["id"]
+                result = True
             except:
                 pass
             if time.time() - start_t >= 15:
                 return False, '**warning** buy late 15 sec'
-
-        return self.api.result, self.api.buy_multi_option[req_id]["id"]
+        return result, self.api.buy_multi_option[req_id]["id"]
 
     def sell_option(self, options_ids):
         self.api.sell_option(options_ids)
