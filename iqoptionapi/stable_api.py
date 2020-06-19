@@ -1400,10 +1400,10 @@ class IQ_Option:
     def set_binary_live_deal_cb(self, cb):
         self.api.binary_live_deal_cb = cb
 
-    def get_live_deal(self, name, active, _type):
+    def get_live_deal(self, name):
         return self.api.live_deal_data_all[name]
 
-    def pop_live_deal(self, name, active, _type):
+    def pop_live_deal(self, name):
         return self.api.live_deal_data_all[name].pop()
 
     def clear_live_deal(self, name, active, _type, buffersize):
