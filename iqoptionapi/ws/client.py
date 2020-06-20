@@ -166,24 +166,20 @@ class WebsocketClient(object):
         # I Suggest if you get selget_balancef.api.buy_successful==False you need to reconnect iqoption server
         elif message["name"] == "buyComplete":
             try:
-                self.api.buy_successful = message["msg"]["isSuccessful"]
-                self.api.buy_id = message["msg"]["result"]["id"]
+                self.api.buy_successful[str(message["request_id"])] = message["msg"]["isSuccessful"]
+                self.api.buy_id[str(message["request_id"])] = message["msg"]["result"]["id"]
             except:
                 pass
         # *********************buyv3
         # buy_multi_option
         elif message["name"] == "option":
-            self.api.buy_multi_option[str(
-                message["request_id"])] = message["msg"]
+            self.api.buy_multi_option[str(message["request_id"])] = message["msg"]
         # **********************************************************
         elif message["name"] == "listInfoData":
             for get_m in message["msg"]:
-                self.api.listinfodata.set(
-                    get_m["win"], get_m["game_state"], get_m["id"])
+                self.api.listinfodata.set(get_m["win"], get_m["game_state"], get_m["id"])
         elif message["name"] == "socket-option-opened":
-            id = message["msg"]["id"]
-            self.api.socket_option_opened[id] = message
-
+            self.api.socket_option_opened[message["msg"]["id"]] = message
         elif message["name"] == "api_option_init_all_result":
             self.api.api_option_init_all_result = message["msg"]
         elif message["name"] == "initialization-data":
@@ -202,23 +198,15 @@ class WebsocketClient(object):
             elif message["microserviceName"] == "portfolio" and message["msg"]["source"] == "binary-options":
                 self.api.order_async[int(
                     message["msg"]["external_id"])][message["name"]] = message
-                # print(message)
-
         elif message["name"] == "option-opened":
             self.api.order_async[int(
                 message["msg"]["option_id"])][message["name"]] = message
-
         elif message["name"] == "option-closed":
-
-            self.api.order_async[int(
-                message["msg"]["option_id"])][message["name"]] = message
+            self.api.order_async[int(message["msg"]["option_id"])][message["name"]] = message
             if message["microserviceName"] == "binary-options":
-                self.api.order_binary[
-                    message["msg"]["option_id"]] = message['msg']
-
+                self.api.order_binary[message["msg"]["option_id"]] = message['msg']
         elif message["name"] == "top-assets-updated":
-            self.api.top_assets_updated_data[str(
-                message["msg"]["instrument_type"])] = message["msg"]["data"]
+            self.api.top_assets_updated_data[str(message["msg"]["instrument_type"])] = message["msg"]["data"]
         elif message["name"] == "strike-list":
             self.api.strike_list = message
         elif message["name"] == "api_game_betinfo_result":
@@ -328,8 +316,7 @@ class WebsocketClient(object):
         elif message["name"] == "training-balance-reset":
             self.api.training_balance_reset_request = message["msg"]["isSuccessful"]
         elif message["name"] == "socket-option-closed":
-            id = message["msg"]["id"]
-            self.api.socket_option_closed[id] = message
+            self.api.socket_option_closed[message["msg"]["id"]] = message
         elif message["name"] == "live-deal-binary-option-placed":
             name = message["name"]
             _type = message["msg"]["option_type"]

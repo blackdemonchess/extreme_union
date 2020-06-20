@@ -106,7 +106,7 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
     game_betinfo = Game_betinfo_data()
     instruments = None
     financial_information = None
-    buy_id = None
+    buy_id = []
     buy_order_id = None
     traders_mood = {}  # get hight(put) %
     technical_indicators = {}
@@ -170,7 +170,7 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
         # it is None, there had been no buy order yet or just send.
         # If it is false, the last failed
         # If it is true, the last buy order was successful
-        self.buy_successful = None
+        self.buy_successful = []
         self.__active_account_type = None
 
     def prepare_http_url(self, resource):

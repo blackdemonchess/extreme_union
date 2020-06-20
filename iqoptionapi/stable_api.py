@@ -821,39 +821,43 @@ class IQ_Option:
 
         return self.api.result, self.api.buy_multi_option[req_id]["id"]
 
-    def buy(self, price, ACTIVES, ACTION, expirations):
-        if len(self.api.buy_multi_option) > 1000:
-            for k in self.api.buy_multi_option.keys():
-                del self.api.buy_multi_option[k]
-                break
-        self.api.buy_successful = None
+    def buy(self, price, ACTIVES, ACTION, expirations, sleep_time=0):
+        req_id = str(randint(0, 10000) + randint(0, 1000) + randint(0, 100))
         try:
-            req_id = str(str(len(self.api.buy_multi_option)) + str(int(randint(0, 100))))
-        except:
-            req_id = str(randint(0, 10000))
-        try:
-            self.api.buy_multi_option[req_id]["id"] = None
+            self.api.buy_multi_option[req_id] = {'id': None}
         except:
             pass
-        self.api.buyv3(
-            float(price), OP_code.ACTIVES[ACTIVES], str(ACTION), int(expirations), req_id)
+        self.api.buyv3(float(price), OP_code.ACTIVES[ACTIVES], str(ACTION), int(expirations), str(req_id))
         start_t = time.time()
         id = None
         result = False
         while not result or id is None:
             try:
                 if "message" in self.api.buy_multi_option[req_id].keys():
-                    return False, self.api.buy_multi_option[req_id]["message"]
+                    menssagem = self.api.buy_multi_option[req_id]["message"]
+                    del self.api.buy_multi_option[req_id]
+                    return False, menssagem
             except:
                 pass
             try:
                 id = self.api.buy_multi_option[req_id]["id"]
-                result = True
+                if type(id) is int:
+                    result = True
+                elif id is None:
+                    pass
+                else:
+                    result = False
             except:
                 pass
             if time.time() - start_t >= 15:
-                return False, '**warning** buy late 15 sec'
-        return result, self.api.buy_multi_option[req_id]["id"]
+                del self.api.buy_multi_option[req_id]
+                return False, 'buy late 15 sec'
+            time.sleep(sleep_time)
+        try:
+            del self.api.buy_multi_option[req_id]
+        except KeyError:
+            pass
+        return result, id
 
     def sell_option(self, options_ids):
         self.api.sell_option(options_ids)
