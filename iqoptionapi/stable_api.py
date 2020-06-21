@@ -1401,6 +1401,9 @@ class IQ_Option:
     def clear_live_deal(self, name):
         self.api.live_deal_data_all[name].clear()
 
+    def remove_trade_live_deal(self, name, trade):
+        self.api.live_deal_data_all[name].remove(trade)
+
     def get_user_profile_client(self, user_id):
         self.api.user_profile_client = None
         self.api.Get_User_Profile_Client(user_id)
