@@ -254,7 +254,7 @@ class IQ_Option:
 
     # ------- chek if binary/digit/cfd/stock... if open or not
 
-    def get_all_open_time(self):
+    def get_all_open_time(self, others=False):
         # for binary option turbo and binary
         OPEN_TIME = nested_dict(3, dict)
         binary_data = self.get_all_init_v2()
@@ -284,18 +284,19 @@ class IQ_Option:
                     OPEN_TIME["digital"][name]["open"] = True
 
         # for OTHER
-        instrument_list = ["cfd", "forex", "crypto"]
-        for instruments_type in instrument_list:
-            ins_data = self.get_instruments(instruments_type)["instruments"]
-            for detail in ins_data:
-                name = detail["name"]
-                schedule = detail["schedule"]
-                OPEN_TIME[instruments_type][name]["open"] = False
-                for schedule_time in schedule:
-                    start = schedule_time["open"]
-                    end = schedule_time["close"]
-                    if start < time.time() < end:
-                        OPEN_TIME[instruments_type][name]["open"] = True
+        if others:
+            instrument_list = ["cfd", "forex", "crypto"]
+            for instruments_type in instrument_list:
+                ins_data = self.get_instruments(instruments_type)["instruments"]
+                for detail in ins_data:
+                    name = detail["name"]
+                    schedule = detail["schedule"]
+                    OPEN_TIME[instruments_type][name]["open"] = False
+                    for schedule_time in schedule:
+                        start = schedule_time["open"]
+                        end = schedule_time["close"]
+                        if start < time.time() < end:
+                            OPEN_TIME[instruments_type][name]["open"] = True
 
         return OPEN_TIME
 
@@ -1379,7 +1380,7 @@ class IQ_Option:
     # name:
     # "live-deal-binary-option-placed"
     # "live-deal-digital-option"
-    def subscribe_live_deal(self, name, buffersize):
+    def subscribe_live_deal(self, name):
         self.api.Subscribe_Live_Deal(name)
 
     def unscribe_live_deal(self, name):
@@ -1397,9 +1398,8 @@ class IQ_Option:
     def pop_live_deal(self, name):
         return self.api.live_deal_data_all[name].pop()
 
-    def clear_live_deal(self, name, active, _type, buffersize):
-        self.api.live_deal_data[name][active][_type] = deque(
-            list(), buffersize)
+    def clear_live_deal(self, name):
+        self.api.live_deal_data_all[name].clear()
 
     def get_user_profile_client(self, user_id):
         self.api.user_profile_client = None

@@ -318,17 +318,13 @@ class WebsocketClient(object):
         elif message["name"] == "socket-option-closed":
             self.api.socket_option_closed[message["msg"]["id"]] = message
         elif message["name"] == "live-deal-binary-option-placed":
-            name = message["name"]
-            _type = message["msg"]["option_type"]
             try:
-                self.api.live_deal_data_all[name].appendleft(message["msg"])
+                self.api.live_deal_data_all[message["name"]].appendleft(message["msg"])
             except:
                 pass
         elif message["name"] == "live-deal-digital-option":
-            name = message["name"]
-            _type = message["msg"]["expiration_type"]
             try:
-                self.api.live_deal_data_all[name].appendleft(message["msg"])
+                self.api.live_deal_data_all[message["name"]].appendleft(message["msg"])
             except:
                 pass
 
