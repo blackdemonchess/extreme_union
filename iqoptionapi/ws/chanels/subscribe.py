@@ -41,6 +41,7 @@ class Subscribe_candles(Base):
 
         self.send_websocket_request(self.name, data)
 
+
 class Subscribe_Instrument_Quites_Generated(Base):
     name = "subscribeMessage"
     

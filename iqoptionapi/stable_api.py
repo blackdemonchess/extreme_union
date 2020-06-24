@@ -805,7 +805,7 @@ class IQ_Option:
 
         return self.api.result, self.api.buy_multi_option[req_id]["id"]
 
-    def buy(self, price, ACTIVES, ACTION, expirations, sleep_time=0):
+    def buy(self, price, ACTIVES, ACTION, expirations, sleep_time=0.05):
         req_id = str(randint(0, 10000) + randint(0, 1000) + randint(0, 100))
         try:
             self.api.buy_multi_option[req_id] = {'id': None}
@@ -815,6 +815,7 @@ class IQ_Option:
         start_t = time.time()
         id = None
         result = False
+        time.sleep(sleep_time)
         while not result or id is None:
             try:
                 if "message" in self.api.buy_multi_option[req_id].keys():

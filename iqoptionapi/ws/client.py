@@ -229,7 +229,6 @@ class WebsocketClient(object):
             self.api.position = message
         elif message["name"] == "deferred-orders":
             self.api.deferred_orders = message
-
         elif message["name"] == "technical-indicators":
             if message["msg"].get("indicators") != None:
                 if len(self.api.technical_indicators) > 5000:
