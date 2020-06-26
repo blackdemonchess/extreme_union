@@ -1408,14 +1408,16 @@ class IQ_Option:
     def get_user_profile_client(self, user_id):
         self.api.user_profile_client = None
         self.api.Get_User_Profile_Client(user_id)
+        start_t = time.time()
         while self.api.user_profile_client == None:
+            if time.time() - start_t > 10:
+                break
+            time.sleep(0.05)
             pass
-
         return self.api.user_profile_client
 
     def request_leaderboard_userinfo_deals_client(self, user_id, country_id):
         self.api.leaderboard_userinfo_deals_client = None
-
         while True:
             try:
                 if self.api.leaderboard_userinfo_deals_client["isSuccessful"] == True:
