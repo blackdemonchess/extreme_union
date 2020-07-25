@@ -39,6 +39,12 @@ class WebsocketClient(object):
                     del dict[key1][key2][sorted(
                         dict[key1][key2].keys(), reverse=False)[0]]
 
+    def api_dict_clean(self, obj):
+        if len(obj) > 5000:
+            for k in obj.keys():
+                del obj[k]
+                break
+
     def on_message(self, message):  # pylint: disable=unused-argument
         """Method to process websocket messages."""
         global_value.ssl_Mutual_exclusion = True
@@ -231,10 +237,7 @@ class WebsocketClient(object):
             self.api.deferred_orders = message
         elif message["name"] == "technical-indicators":
             if message["msg"].get("indicators") != None:
-                if len(self.api.technical_indicators) > 5000:
-                    for k in self.api.technical_indicators.keys():
-                        del self.api.technical_indicators[k]
-                        break
+                self.api_dict_clean(self.api.digital_option_placed_id)
                 self.api.technical_indicators[message["request_id"]
                                               ] = message["msg"]["indicators"]
             else:
@@ -267,11 +270,9 @@ class WebsocketClient(object):
             self.api.auto_margin_call_changed_respond = message
         elif message["name"] == "digital-option-placed":
             if message["msg"].get("id") != None:
-                if len(self.api.digital_option_placed_id) > 5000:
-                    for k in self.api.digital_option_placed_id.keys():
-                        del self.api.digital_option_placed_id[k]
-                        break
-                self.api.digital_option_placed_id[message["request_id"]] = message["msg"]["id"]
+                self.api_dict_clean(self.api.digital_option_placed_id)
+                self.api.digital_option_placed_id[message["request_id"]
+                ] = message["msg"]["id"]
             else:
                 self.api.digital_option_placed_id[message["request_id"]] = {
                     "code": "error_place_digital_order",
