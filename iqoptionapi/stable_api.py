@@ -689,12 +689,14 @@ class IQ_Option:
         # Function by kkagill ( https://github.com/Lu-Yi-Hsun/iqoptionapi/issues/196 | https://github.com/kkagill )
         # Function only work with Options!
 
-    def check_win_v4(self, id_number):
+    def check_win_v4(self, id_number, polling_time=0.05):
         while True:
             try:
+                time.sleep(polling_time)
                 if self.api.socket_option_closed[id_number] != None:
                     break
             except:
+                time.sleep(polling_time)
                 pass
         x = self.api.socket_option_closed[id_number]
         return x['msg']['win'], (0 if x['msg']['win'] == 'equal' else float(x['msg']['sum']) * -1 if x['msg']['win'] == 'loose' else float(x['msg']['win_amount']) - float(x['msg']['sum']))
