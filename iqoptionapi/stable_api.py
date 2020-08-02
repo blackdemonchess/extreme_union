@@ -817,6 +817,7 @@ class IQ_Option:
         start_t = time.time()
         id = None
         result = False
+        taxa = None
         time.sleep(sleep_time)
         while not result or id is None:
             try:
@@ -828,6 +829,7 @@ class IQ_Option:
                 pass
             try:
                 id = self.api.buy_multi_option[req_id]["id"]
+                taxa = self.api.buy_multi_option[req_id]["value"]
                 if type(id) is int:
                     result = True
                 elif id is None:
@@ -844,7 +846,7 @@ class IQ_Option:
             del self.api.buy_multi_option[req_id]
         except KeyError:
             pass
-        return result, id
+        return result, id, taxa
 
     def sell_option(self, options_ids):
         self.api.sell_option(options_ids)
