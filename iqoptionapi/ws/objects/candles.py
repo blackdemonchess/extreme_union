@@ -70,7 +70,7 @@ class Candles(Base):
     def __init__(self):
         super(Candles, self).__init__()
         self.__name = "candles"
-        self.__candles_data = None
+        self.__candles_data = {}
 
     @property
     def candles_data(self):

@@ -162,7 +162,7 @@ class WebsocketClient(object):
 
         elif message["name"] == "candles":
             try:
-                self.api.candles.candles_data = message["msg"]["candles"]
+                self.api.candles.candles_data[str(message["request_id"])] = message["msg"]["candles"]
             except:
                 pass
         # Make sure ""self.api.buySuccessful"" more stable

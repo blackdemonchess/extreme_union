@@ -9,7 +9,7 @@ class GetCandles(Base):
 
     name = "sendMessage"
 
-    def __call__(self, active_id, interval, count,endtime):
+    def __call__(self, active_id, interval, count, endtime, req_id='0'):
         """Method to send message to candles websocket chanel.
 
         :param active_id: The active/asset identifier.
@@ -29,4 +29,4 @@ class GetCandles(Base):
                         }
                 }
 
-        self.send_websocket_request(self.name, data)
+        self.send_websocket_request(self.name, data, request_id=req_id)

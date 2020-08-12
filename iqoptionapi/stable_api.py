@@ -441,20 +441,24 @@ class IQ_Option:
     # _______________________        CANDLE      _____________________________
     # ________________________self.api.getcandles() wss________________________
 
-    def get_candles(self, ACTIVES, interval, count, endtime):
-        self.api.candles.candles_data = None
+    def get_candles(self, active, interval, count, endtime):
+        try:
+            req_id = str(active)
+        except:
+            req_id = str(randint(0, 1000))
+        self.api.candles.candles_data[str(req_id)] = None
         while True:
             try:
                 self.api.getcandles(
-                    OP_code.ACTIVES[ACTIVES], interval, count, endtime)
-                while self.check_connect and self.api.candles.candles_data == None:
+                    OP_code.ACTIVES[active], interval, count, endtime, req_id=req_id)
+                while self.check_connect and self.api.candles.candles_data[str(req_id)] == None:
                     pass
-                if self.api.candles.candles_data != None:
+                if self.api.candles.candles_data[str(req_id)] != None:
                     break
             except:
                 self.connect()
 
-        return self.api.candles.candles_data
+        return self.api.candles.candles_data[str(req_id)]
 
     #######################################################
     # ______________________________________________________
