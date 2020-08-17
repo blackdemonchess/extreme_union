@@ -457,7 +457,6 @@ class IQ_Option:
                     break
             except:
                 self.connect()
-
         return self.api.candles.candles_data[str(req_id)]
 
     #######################################################
@@ -828,7 +827,7 @@ class IQ_Option:
                 if "message" in self.api.buy_multi_option[req_id].keys():
                     menssagem = self.api.buy_multi_option[req_id]["message"]
                     del self.api.buy_multi_option[req_id]
-                    return False, menssagem
+                    return False, menssagem, None
             except:
                 pass
             try:
@@ -844,7 +843,7 @@ class IQ_Option:
                 pass
             if time.time() - start_t >= 15:
                 del self.api.buy_multi_option[req_id]
-                return False, 'buy late 15 sec'
+                return False, 'buy late 15 sec', None
             time.sleep(sleep_time)
         try:
             del self.api.buy_multi_option[req_id]
