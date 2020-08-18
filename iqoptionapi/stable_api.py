@@ -813,7 +813,7 @@ class IQ_Option:
     def buy(self, price, ACTIVES, ACTION, expirations, sleep_time=0.05):
         req_id = str(randint(0, 10000) + randint(0, 1000) + randint(0, 100))
         try:
-            self.api.buy_multi_option[req_id] = {'id': None}
+            self.api.buy_multi_option[req_id] = {'id': None, 'taxa': None}
         except:
             pass
         self.api.buyv3(float(price), OP_code.ACTIVES[ACTIVES], str(ACTION), int(expirations), str(req_id))
@@ -839,6 +839,7 @@ class IQ_Option:
                     pass
                 else:
                     result = False
+                    taxa = None
             except:
                 pass
             if time.time() - start_t >= 15:
