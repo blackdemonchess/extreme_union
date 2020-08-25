@@ -229,9 +229,9 @@ class WebsocketClient(object):
         elif message["name"] == "order":
             self.api.order_data = message
         elif message["name"] == "positions":
-            self.api.positions = message
+            self.api.positions[message["request_id"]] = message
         elif message["name"] == "position":
-            self.api.position = message
+            self.api.position[message["request_id"]] = message
         elif message["name"] == "deferred-orders":
             self.api.deferred_orders = message
         elif message["name"] == "technical-indicators":
@@ -247,7 +247,7 @@ class WebsocketClient(object):
         elif message["name"] == "position-history":
             self.api.position_history = message
         elif message["name"] == "history-positions":
-            self.api.position_history_v2 = message
+            self.api.position_history_v2[message["request_id"]] = message
         elif message["name"] == "available-leverages":
             self.api.available_leverages = message
         elif message["name"] == "order-canceled":

@@ -813,7 +813,7 @@ class IQ_Option:
     def buy(self, price, ACTIVES, ACTION, expirations, sleep_time=0.05):
         req_id = str(randint(0, 10000) + randint(0, 1000) + randint(0, 100))
         try:
-            self.api.buy_multi_option[req_id] = {'id': None, 'taxa': None}
+            self.api.buy_multi_option[req_id] = {'id': None, 'value': None}
         except:
             pass
         self.api.buyv3(float(price), OP_code.ACTIVES[ACTIVES], str(ACTION), int(expirations), str(req_id))
@@ -1233,6 +1233,7 @@ class IQ_Option:
         self.api.get_order(buy_order_id)
         while self.api.order_data == None:
             pass
+        print(self.api.order_data)
         if self.api.order_data["status"] == 2000:
             return True, self.api.order_data["msg"]
         else:
@@ -1250,46 +1251,50 @@ class IQ_Option:
 
     # this function is heavy
     def get_positions(self, instrument_type):
-        self.api.positions = None
-        self.api.get_positions(instrument_type)
-        while self.api.positions == None:
+        req_id = str(randint(0, 1000))
+        self.api.positions[req_id] = None
+        self.api.get_positions(instrument_type, req_id)
+        while self.api.positions[req_id] == None:
             pass
-        if self.api.positions["status"] == 2000:
-            return True, self.api.positions["msg"]
+        if self.api.positions[req_id]["status"] == 2000:
+            return True, self.api.positions[req_id]["msg"]
         else:
             return False, None
 
     def get_position(self, buy_order_id):
-        self.api.position = None
+        req_id = str(randint(0, 1000))
+        self.api.position[req_id] = None
         check, order_data = self.get_order(buy_order_id)
         position_id = order_data["position_id"]
         self.api.get_position(position_id)
-        while self.api.position == None:
+        while self.api.position[req_id] is None:
             pass
-        if self.api.position["status"] == 2000:
-            return True, self.api.position["msg"]
+        if self.api.position[req_id]["status"] == 2000:
+            return True, self.api.position[req_id]["msg"]
         else:
             return False, None
 
     # this function is heavy
 
     def get_digital_position_by_position_id(self, position_id):
-        self.api.position = None
-        self.api.get_digital_position(position_id)
-        while self.api.position == None:
+        req_id = str(randint(0, 1000))
+        self.api.position[req_id] = None
+        self.api.get_digital_position(position_id, req_id)
+        while self.api.position[req_id] is None:
             pass
-        return self.api.position
+        return self.api.position[req_id]
 
     def get_digital_position(self, order_id):
-        self.api.position = None
+        req_id = str(randint(0, 1000))
+        self.api.position[req_id] = None
         while self.get_async_order(order_id)["position-changed"] == {}:
             pass
         position_id = self.get_async_order(
             order_id)["position-changed"]["msg"]["external_id"]
-        self.api.get_digital_position(position_id)
-        while self.api.position == None:
+        self.api.get_digital_position(position_id, req_id)
+        while self.api.position[req_id] is None:
             pass
-        return self.api.position
+        return self.api.position[req_id]
 
     def get_position_history(self, instrument_type):
         self.api.position_history = None
@@ -1304,14 +1309,15 @@ class IQ_Option:
 
     def get_position_history_v2(self, instrument_type, limit, offset, start, end):
         # instrument_type=crypto forex fx-option multi-option cfd digital-option turbo-option
-        self.api.position_history_v2 = None
+        req_id = str(randint(0, 100))
+        self.api.position_history_v2[req_id] = None
         self.api.get_position_history_v2(
-            instrument_type, limit, offset, start, end)
-        while self.api.position_history_v2 == None:
+            instrument_type, limit, offset, start, end, req_id)
+        while self.api.position_history_v2[req_id] == None:
             pass
 
-        if self.api.position_history_v2["status"] == 2000:
-            return True, self.api.position_history_v2["msg"]
+        if self.api.position_history_v2[req_id]["status"] == 2000:
+            return True, self.api.position_history_v2[req_id]["msg"]
         else:
             return False, None
 
