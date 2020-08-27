@@ -23,7 +23,7 @@ def nested_dict(n, type):
 class IQ_Option:
     __version__ = "6.8.9.1"
 
-    def __init__(self, email, password, active_account_type="PRACTICE"):
+    def __init__(self, email, password):
         self.size = [1, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800,
                      3600, 7200, 14400, 28800, 43200, 86400, 604800, 2592000]
         self.email = email
@@ -367,6 +367,45 @@ class IQ_Option:
         while self.api.balances_raw == None:
             pass
         return self.api.balances_raw
+
+    def create_alert(self, active, instrument_type, price, permanent):
+        req_id = str(randint(0, 1000))
+        if permanent:
+            permanent = 0
+        else:
+            permanent = 1
+        self.api.alerts_user[req_id] = None
+        self.api.create_alert(OP_code.ACTIVES[active], instrument_type, price, permanent, request_id=req_id)
+        while self.api.alerts_user[req_id] is None:
+            pass
+        return self.api.alerts_user[req_id]
+        pass
+
+    def update_alert(self, active, alert_id, price, permanent):
+        req_id = str(randint(0, 1000))
+        if permanent:
+            permanent = 0
+        else:
+            permanent = 1
+        self.api.alerts_user[req_id] = None
+        self.api.update_alert(OP_code.ACTIVES[active], alert_id, price, permanent, request_id=req_id)
+        while self.api.alerts_user[req_id] is None:
+            pass
+        return self.api.alerts_user[req_id]
+        pass
+
+    def delete_alert(self, alert_id):
+        req_id = str(randint(0, 1000))
+        self.api.alerts_user[req_id] = None
+        self.api.delete_alert(alert_id, request_id=req_id)
+        while self.api.alerts_user[req_id] is None:
+            pass
+        return self.api.alerts_user[req_id]
+        pass
+
+    def get_alerts_triggers(self):
+        return self.api.alerts_user_triggers
+        pass
 
     def get_balance_mode(self):
         # self.api.profile.balance_type=None

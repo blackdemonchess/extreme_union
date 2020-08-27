@@ -18,6 +18,7 @@ from iqoptionapi.http.billing import Billing
 from iqoptionapi.http.buyback import Buyback
 from iqoptionapi.http.changebalance import Changebalance
 from iqoptionapi.http.events import Events
+from iqoptionapi.ws.chanels.alerts import CreateAlert, UpdateAlert, DeleteAlert
 from iqoptionapi.ws.client import WebsocketClient
 from iqoptionapi.ws.chanels.get_balances import *
 
@@ -99,6 +100,8 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
     instrument_quites_generated_timestamp = nested_dict(2, dict)
     strike_list = None
     leaderboard_deals_client = None
+    alerts_user = nested_dict(2, dict)
+    alerts_user_triggers = []
     #position_changed_data = nested_dict(2, dict)
     # microserviceName_binary_options_name_option=nested_dict(2,dict)
     order_async = nested_dict(2, dict)
@@ -447,6 +450,18 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
     @property
     def unsubscribe_all_size(self):
         return Unsubscribe_candles(self)
+
+    @property
+    def create_alert(self):
+        return CreateAlert(self)
+
+    @property
+    def update_alert(self):
+        return UpdateAlert(self)
+
+    @property
+    def delete_alert(self):
+        return DeleteAlert(self)
 
     def portfolio(self, Main_Name, name, instrument_type, user_balance_id="", limit=1, offset=0, request_id=""):
         # Main name:"unsubscribeMessage"/"subscribeMessage"/"sendMessage"(only for portfolio.get-positions")

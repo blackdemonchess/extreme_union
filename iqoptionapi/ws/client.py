@@ -347,6 +347,21 @@ class WebsocketClient(object):
             self.api.leaderboard_userinfo_deals_client = message["msg"]
         elif message["name"] == "users-availability":
             self.api.users_availability = message["msg"]
+        elif message["name"] == "alert":
+            if message["status"] == 2000:
+                self.api.alerts_user[message['request_id']] = (True, message['msg']['id'])
+            else:
+                self.api.alerts_user[message['request_id']] = (False, message['msg'])
+            pass
+        elif message["name"] == "alert-triggered":
+            active_name = list(OP_code.ACTIVES.keys())[list(
+                OP_code.ACTIVES.values()).index(message["msg"]["active_id"])]
+            active = str(active_name)
+            new_msg = {'id': message["msg"]['id'], 'active': active, "timestamp": message['msg']["timestamp"], 'value': message['msg']["value"]}
+            self.api.alerts_user_triggers.append(new_msg)
+            pass
+        elif message["name"] == "":
+            pass
         else:
             pass
         global_value.ssl_Mutual_exclusion = False
