@@ -451,7 +451,17 @@ class IQ_Option:
             try:
                 self.api.getcandles(
                     OP_code.ACTIVES[active], interval, count, endtime, req_id=req_id)
-                while self.check_connect and self.api.candles.candles_data[str(req_id)] == None:
+                while self.api.candles.candles_data[str(req_id)] == None:
+                    if not self.check_connect():
+                        self.connect()
+                        start = time.time()
+                        while not self.check_connect():
+                            if time.time() - start > 5:
+                                break
+                            time.sleep(1)
+                            pass
+                        self.api.getcandles(
+                            OP_code.ACTIVES[active], interval, count, endtime, req_id=req_id)
                     pass
                 if self.api.candles.candles_data[str(req_id)] != None:
                     break
