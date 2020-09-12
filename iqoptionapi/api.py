@@ -251,8 +251,7 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
         :param dict msg: The websocket request msg.
         """
 
-        data = json.dumps(dict(name=name,
-                               msg=msg, request_id=request_id))
+        data = json.dumps(dict(name=name, msg=msg, request_id=request_id))
 
         while (global_value.ssl_Mutual_exclusion or global_value.ssl_Mutual_exclusion_write) and no_force_send:
             pass

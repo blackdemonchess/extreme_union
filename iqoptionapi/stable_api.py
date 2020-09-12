@@ -195,7 +195,7 @@ class IQ_Option:
                                   near_traders_country_count, near_traders_count, top_country_count, top_count,
                                   top_type)
 
-        while self.api.leaderboard_deals_client == None:
+        while self.api.leaderboard_deals_client is None:
             pass
         return self.api.leaderboard_deals_client
 
@@ -232,7 +232,6 @@ class IQ_Option:
 
     # _________________________self.api.get_api_option_init_all() wss______________________
     def get_all_init(self):
-
         while True:
             self.api.api_option_init_all_result = None
             while True:
@@ -247,12 +246,12 @@ class IQ_Option:
                 if time.time() - start > 30:
                     break
                 try:
-                    if self.api.api_option_init_all_result != None:
+                    if self.api.api_option_init_all_result is not None:
                         break
                 except:
                     pass
             try:
-                if self.api.api_option_init_all_result["isSuccessful"] == True:
+                if self.api.api_option_init_all_result["isSuccessful"]:
                     return self.api.api_option_init_all_result
             except:
                 pass
@@ -342,18 +341,11 @@ class IQ_Option:
         for actives in init_info["result"]["turbo"]["actives"]:
             name = init_info["result"]["turbo"]["actives"][actives]["name"]
             name = name[name.index(".") + 1:len(name)]
-            all_profit[name]["turbo"] = (
-                                                100.0 -
-                                                init_info["result"]["turbo"]["actives"][actives]["option"]["profit"][
-                                                    "commission"]) / 100.0
-
+            all_profit[name]["turbo"] = (100.0 - init_info["result"]["turbo"]["actives"][actives]["option"]["profit"]["commission"]) / 100.0
         for actives in init_info["result"]["binary"]["actives"]:
             name = init_info["result"]["binary"]["actives"][actives]["name"]
             name = name[name.index(".") + 1:len(name)]
-            all_profit[name]["binary"] = (
-                                                 100.0 -
-                                                 init_info["result"]["binary"]["actives"][actives]["option"]["profit"][
-                                                     "commission"]) / 100.0
+            all_profit[name]["binary"] = (100.0 - init_info["result"]["binary"]["actives"][actives]["option"]["profit"]["commission"]) / 100.0
         return all_profit
 
     # ----------------------------------------
@@ -375,9 +367,7 @@ class IQ_Option:
         return global_value.balance_id
 
     def get_balance(self):
-
-        balances_raw = self.get_balances()
-        for balance in balances_raw["msg"]:
+        for balance in self.get_balances()["msg"]:
             if balance["id"] == global_value.balance_id:
                 return balance["amount"]
 
@@ -617,7 +607,7 @@ class IQ_Option:
                 pass
             self.api.candle_generated_check[str(ACTIVE)][int(size)] = {}
             self.api.unsubscribe(OP_code.ACTIVES[ACTIVE], size)
-            time.sleep(self.suspend * 10)
+            time.sleep(self.suspend * 4)
 
     # ------------------------Subscribe ALL SIZE-----------------------
 
@@ -651,7 +641,7 @@ class IQ_Option:
                 pass
             self.api.candle_generated_all_size_check[str(ACTIVE)] = {}
             self.api.unsubscribe_all_size(OP_code.ACTIVES[ACTIVE])
-            time.sleep(self.suspend * 10)
+            time.sleep(self.suspend * 4)
 
     # ------------------------top_assets_updated---------------------------------------------
 
@@ -892,18 +882,20 @@ class IQ_Option:
         id = None
         result = False
         taxa = None
+        exp_timestamp = None
         time.sleep(sleep_time)
         while not result or id is None:
             try:
                 if "message" in self.api.buy_multi_option[req_id].keys():
                     menssagem = self.api.buy_multi_option[req_id]["message"]
                     del self.api.buy_multi_option[req_id]
-                    return False, menssagem, None
+                    return False, menssagem, None, None
             except:
                 pass
             try:
                 id = self.api.buy_multi_option[req_id]["id"]
                 taxa = self.api.buy_multi_option[req_id]["value"]
+                exp_timestamp = self.api.buy_multi_option[req_id]['exp']
                 if type(id) is int:
                     result = True
                 elif id is None:
@@ -915,13 +907,13 @@ class IQ_Option:
                 pass
             if time.time() - start_t >= 15:
                 del self.api.buy_multi_option[req_id]
-                return False, 'buy late 15 sec', None
+                return False, 'buy late 15 sec', None, None
             time.sleep(sleep_time)
         try:
             del self.api.buy_multi_option[req_id]
         except KeyError:
             pass
-        return result, id, taxa
+        return result, id, taxa, exp_timestamp
 
     def sell_option(self, options_ids):
         self.api.sell_option(options_ids)

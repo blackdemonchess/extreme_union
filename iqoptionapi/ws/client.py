@@ -54,7 +54,7 @@ class WebsocketClient(object):
         message = json.loads(str(message))
         if message["name"] == "timeSync":
             self.api.timesync.server_timestamp = message["msg"]
-         #######################################################
+        #######################################################
         # ---------------------for_realtime_candle______________
         #######################################################
         elif message["name"] == "candle-generated":
@@ -97,7 +97,8 @@ class WebsocketClient(object):
             Active_name = list(OP_code.ACTIVES.keys())[list(
                 OP_code.ACTIVES.values()).index(active_id)]
             commission = message["msg"]["commission"]["value"]
-            self.api.subscribe_commission_changed_data[instrument_type][Active_name][self.api.timesync.server_timestamp] = int(
+            self.api.subscribe_commission_changed_data[instrument_type][Active_name][
+                self.api.timesync.server_timestamp] = int(
                 commission)
 
         #######################################################
@@ -197,7 +198,8 @@ class WebsocketClient(object):
             self.api.financial_information = message
         elif message["name"] == "position-changed":
 
-            if message["microserviceName"] == "portfolio" and (message["msg"]["source"] == "digital-options") or message["msg"]["source"] == "trading":
+            if message["microserviceName"] == "portfolio" and (message["msg"]["source"] == "digital-options") or \
+                    message["msg"]["source"] == "trading":
                 self.api.order_async[int(
                     message["msg"]["raw_event"]["order_ids"][0])][message["name"]] = message
             elif message["microserviceName"] == "portfolio" and message["msg"]["source"] == "binary-options":
@@ -222,7 +224,7 @@ class WebsocketClient(object):
                 pass
         elif message["name"] == "traders-mood-changed":
             self.api.traders_mood[message["msg"]
-                                  ["asset_id"]] = message["msg"]["value"]
+            ["asset_id"]] = message["msg"]["value"]
         # ------for forex&cfd&crypto..
         elif message["name"] == "order-placed-temp":
             self.api.buy_order_id = message["msg"]["id"]
@@ -238,7 +240,7 @@ class WebsocketClient(object):
             if message["msg"].get("indicators") != None:
                 self.api_dict_clean(self.api.digital_option_placed_id)
                 self.api.technical_indicators[message["request_id"]
-                                              ] = message["msg"]["indicators"]
+                ] = message["msg"]["indicators"]
             else:
                 self.api.technical_indicators[message["request_id"]] = {
                     "code": "no_technical_indicator_available",
@@ -268,7 +270,7 @@ class WebsocketClient(object):
         elif message["name"] == "auto-margin-call-changed":
             self.api.auto_margin_call_changed_respond = message
         elif message["name"] == "digital-option-placed":
-            if message["msg"].get("id") != None:
+            if message["msg"].get("id") is not None:
                 self.api_dict_clean(self.api.digital_option_placed_id)
                 self.api.digital_option_placed_id[message["request_id"]
                 ] = message["msg"]["id"]
@@ -292,7 +294,7 @@ class WebsocketClient(object):
                     ProfitPercent = None
                 else:
                     askPrice = (float)(data["price"]["ask"])
-                    ProfitPercent = ((100-askPrice)*100)/askPrice
+                    ProfitPercent = ((100 - askPrice) * 100) / askPrice
 
                 for symble in data["symbols"]:
                     try:
@@ -357,7 +359,8 @@ class WebsocketClient(object):
             active_name = list(OP_code.ACTIVES.keys())[list(
                 OP_code.ACTIVES.values()).index(message["msg"]["active_id"])]
             active = str(active_name)
-            new_msg = {'id': message["msg"]['id'], 'active': active, "timestamp": message['msg']["timestamp"], 'value': message['msg']["value"]}
+            new_msg = {'id': message["msg"]['id'], 'active': active, "timestamp": message['msg']["timestamp"],
+                       'value': message['msg']["value"]}
             self.api.alerts_user_triggers.append(new_msg)
             pass
         elif message["name"] == "":
