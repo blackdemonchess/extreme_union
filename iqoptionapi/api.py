@@ -24,7 +24,7 @@ from iqoptionapi.http.login import Login
 from iqoptionapi.http.loginv2 import Loginv2
 from iqoptionapi.http.logout import Logout
 from iqoptionapi.http.token import Token
-from iqoptionapi.ws.chanels.alerts import CreateAlert, UpdateAlert, DeleteAlert
+from iqoptionapi.ws.chanels.alerts import CreateAlert, UpdateAlert, DeleteAlert, SubscribeAlerts, GetAlerts
 from iqoptionapi.ws.chanels.api_game_betinfo import Game_betinfo
 from iqoptionapi.ws.chanels.api_game_getoptions import *
 from iqoptionapi.ws.chanels.buy_place_order_temp import Buy_place_order_temp
@@ -143,7 +143,7 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
     buy_multi_result = None
     buy_multi_option = {}
     #
-    result = None
+    result = {}
     training_balance_reset_request = None
     balances_raw = None
     user_profile_client = None
@@ -151,6 +151,7 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
     users_availability = None
     # --------
     verdadeiro_timestamp_iq = None
+
     # ------------------
 
     def __init__(self, host, username, password, proxies=None):
@@ -492,6 +493,14 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
     @property
     def delete_alert(self):
         return DeleteAlert(self)
+
+    @property
+    def subscribe_alerts(self):
+        return SubscribeAlerts(self)
+
+    @property
+    def get_alerts(self):
+        return GetAlerts(self)
 
     def portfolio(self, Main_Name, name, instrument_type, user_balance_id="", limit=1, offset=0, request_id=""):
         # Main name:"unsubscribeMessage"/"subscribeMessage"/"sendMessage"(only for portfolio.get-positions")

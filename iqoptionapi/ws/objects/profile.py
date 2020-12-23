@@ -17,6 +17,7 @@ class Profile(Base):
         self.__minimum_amount=1
         self.__balance_type=None
         self.__currency_char=None
+        self.__locale = None
         self.__time_zone=-3
 
     @property
@@ -126,3 +127,12 @@ class Profile(Base):
     @time_zone.setter
     def time_zone(self, time_zone):
         self.__time_zone = int(time_zone/60)
+
+    # ------------
+    @property
+    def locale(self):
+        return self.__locale
+
+    @locale.setter
+    def locale(self, locale):
+        self.__locale = locale

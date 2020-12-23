@@ -142,6 +142,10 @@ class WebsocketClient(object):
                     self.api.profile.balances = message["msg"]["balances"]
                 except:
                     pass
+                try:
+                    self.api.profile.locale = message["msg"]["locale"]
+                except (KeyError, TypeError, AttributeError):
+                    pass
 
         elif message['name'] == 'balance-changed':
             balance = message['msg']['current_balance']
@@ -281,7 +285,9 @@ class WebsocketClient(object):
                     "message": message["msg"]["message"]
                 }
         elif message["name"] == "result":
-            self.api.result = message["msg"]["success"]
+            self.api.result[message['request_id']] = message["msg"]["success"]
+        elif message["name"] == "subscriptions":
+            self.api.result[message['request_id']] = message["msg"]["enabled"]
         elif message["name"] == "instrument-quotes-generated":
 
             Active_name = list(OP_code.ACTIVES.keys())[list(
@@ -350,6 +356,18 @@ class WebsocketClient(object):
             self.api.leaderboard_userinfo_deals_client = message["msg"]
         elif message["name"] == "users-availability":
             self.api.users_availability = message["msg"]
+        elif message["name"] == "alerts":
+            if message["status"] == 2000:
+                retorno_data = {'alertas': [], 'total': 0}
+                for alerta in message["msg"]["records"]:
+                    active_name = list(OP_code.ACTIVES.keys())[list(
+                        OP_code.ACTIVES.values()).index(alerta["asset_id"])]
+                    alerta['active'] = active_name
+                    retorno_data['alertas'].append(alerta)
+                retorno_data['total'] = message["msg"]['total']
+                self.api.result[message['request_id']] = (True, retorno_data)
+            else:
+                self.api.result[message['request_id']] = (False, None)
         elif message["name"] == "alert":
             if message["status"] == 2000:
                 self.api.alerts_user[message['request_id']] = (True, message['msg']['id'])

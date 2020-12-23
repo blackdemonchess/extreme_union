@@ -24,7 +24,7 @@ class Digital_options_place_digital_option(Base):
                 "amount": str(amount)
             }
         }
-        request_id = str(randint(0, 100000))
+        request_id = str(randint(0, 100000)) + str(amount) + str(instrument_id)
         self.send_websocket_request(self.name, data, request_id)
         return request_id
 
@@ -32,7 +32,7 @@ class Digital_options_place_digital_option(Base):
 class Digital_options_close_position(Base):
     name = "sendMessage"
 
-    def __call__(self, position_id):
+    def __call__(self, position_id, req_id=''):
         data = {
             "name": "digital-options.close-position",
             "version": "1.0",
@@ -40,4 +40,4 @@ class Digital_options_close_position(Base):
                 "position_id": int(position_id)
             }
         }
-        self.send_websocket_request(self.name, data)
+        self.send_websocket_request(self.name, data, request_id=req_id)

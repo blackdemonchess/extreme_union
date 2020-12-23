@@ -378,7 +378,8 @@ class IQ_Option:
             pass
         return self.api.balances_raw
 
-    def create_alert(self, active, instrument_type, price, permanent):
+    def create_alert(self, active, price, permanent, instrument_type="digital-option"):
+        # "digital-option", "turbo", "binary"
         req_id = str(randint(0, 1000))
         if permanent:
             permanent = 0
@@ -412,6 +413,32 @@ class IQ_Option:
             pass
         return self.api.alerts_user[req_id]
         pass
+
+    def subscribe_alerts(self):
+        req_id = str(randint(0, 1000))
+        self.api.result[req_id] = None
+        self.api.subscribe_alerts(request_id=req_id)
+        start_t = time.time()
+        while self.api.result[req_id] is None and time.time() - start_t < 5:
+            time.sleep(0.001)
+        retorno = self.api.result[req_id]
+        del self.api.result[req_id]
+        return retorno
+
+    def get_alerts(self, active=None):
+        if active:
+            asset_id = OP_code.ACTIVES[active]
+        else:
+            asset_id = None
+        req_id = str(randint(0, 1000))
+        self.api.result[req_id] = None
+        self.api.get_alerts(asset_id=asset_id, request_id=req_id)
+        start_t = time.time()
+        while self.api.result[req_id] is None and time.time() - start_t < 5:
+            time.sleep(0.001)
+        retorno = self.api.result[req_id]
+        del self.api.result[req_id]
+        return retorno
 
     def get_alerts_triggers(self):
         return self.api.alerts_user_triggers
@@ -855,8 +882,8 @@ class IQ_Option:
             price, OP_code.ACTIVES[active], direction, option, expired, request_id=req_id)
         start_t = time.time()
         id = None
-        self.api.result = None
-        while self.api.result == None or id == None:
+        self.api.result[req_id] = None
+        while self.api.result[req_id] is None or id is None:
             try:
                 if "message" in self.api.buy_multi_option[req_id].keys():
                     return False, self.api.buy_multi_option[req_id]["message"]
@@ -1163,15 +1190,18 @@ class IQ_Option:
         return True, self.api.digital_option_placed_id
 
     def close_digital_option(self, position_id):
-        self.api.result = None
+        req_id = str(randint(0, 10000) + randint(0, 1000) + randint(0, 100))
+        self.api.result[req_id] = None
         while self.get_async_order(position_id)["position-changed"] == {}:
             pass
         position_changed = self.get_async_order(
             position_id)["position-changed"]["msg"]
         self.api.close_digital_option(position_changed["external_id"])
-        while self.api.result == None:
+        while self.api.result[req_id] is None:
             pass
-        return self.api.result
+        resultado = self.api.result[req_id]
+        del self.api.result[req_id]
+        return resultado
 
     def check_win_digital(self, buy_order_id, polling_time):
         while True:
